@@ -1,34 +1,52 @@
 import { writeData, readData } from '../db/mongoConnection.js';
+import { validationResult, check } from 'express-validator';
 
 let videosData = [];
 
-async function addVideo(req, res) {
-    try {
-        const { url } = req.body;
-        if (!url) {
-            return res.status(400).send({ code: 400, error: 'URL is required' });
-        }
+const addVideo = [
+    check('url')
+        .isURL()
+        .withMessage('Valid URL is required')
+        .notEmpty()
+        .withMessage('URL cannot be empty'),
 
-        let video = videosData.find(vid => vid.url === url);
-        if (video) {
-            return res.status(400).send({ 
-                code: 400, 
-                error: 'Video already exists' 
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ 
+                    code: 400, 
+                    errors: errors.array() 
+                });
+            }
+
+            const { url } = req.body;
+
+            let video = videosData.find(vid => vid.url === url);
+            if (video) {
+                return res.status(400).send({ 
+                    code: 400, 
+                    error: 'Video already exists' 
+                });
+            }
+
+            await writeData('videos', {
+                url: url,
+                createdAt: new Date(),
+            });
+
+            await refreshData();
+
+            return res.json({ code: 200, message: 'Video added successfully' });
+        } catch (error) {
+            res.status(500).json({ 
+                code: 500, 
+                message: 'Error adding video', 
+                error: error.message 
             });
         }
-
-        await writeData('videos', {
-            url: url,
-            createdAt: new Date(),
-        });
-
-        await refreshData(); 
-
-        return res.json({ code: 200, message: 'Video added successfully' });
-    } catch (error) {
-        res.status(500).json({ code: 500, message: 'Error adding video', error: error.message });
     }
-}
+];
 
 async function refreshData() {
     try {
