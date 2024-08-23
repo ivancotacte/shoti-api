@@ -14,7 +14,7 @@ async function getVideo(req, res) {
         const response = await axios.get(`https://tikwm.com/api?url=${video.url}`, { url: video.url });
         const videoInfo = response.data;
 
-        res.json({
+        res.status(200).json({
             code: 200,
             message: 'Video fetched successfully',
             data: {

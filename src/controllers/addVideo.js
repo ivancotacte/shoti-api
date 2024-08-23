@@ -1,5 +1,6 @@
 import { writeData, readData } from '../db/mongoConnection.js';
 import { validationResult, check } from 'express-validator';
+import moment from 'moment-timezone';
 
 let videosData = [];
 
@@ -32,12 +33,12 @@ const addVideo = [
 
             await writeData('videos', {
                 url: url,
-                createdAt: new Date(),
+                createdAt: moment().tz('Asia/Manila').format('YYYY-MM-DD HH:mm:ss')
             });
 
             await refreshData();
 
-            return res.json({ code: 200, message: 'Video added successfully' });
+            return res.status(200).json({ code: 200, message: 'Video added successfully' });
         } catch (error) {
             res.status(500).json({ 
                 code: 500, 
