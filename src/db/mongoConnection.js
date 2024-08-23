@@ -39,7 +39,6 @@ async function readData(collection) {
 async function refreshData() {
     try {
         videosData = await readData('videos');
-        console.log('Data refreshed.');
     } catch (error) {
         console.error('Error occurred while refreshing data:', error);
     }
