@@ -1,13 +1,19 @@
-import { refreshData } from '../db/mongoConnection.js';
+import { readData } from '../db/mongoConnection.js';
+import axios from 'axios';
 
 let videosData = [];
+
+refreshData();
+setInterval(refreshData, 1000 * 60 * 1);
 
 async function getVideo(req, res) {
     try {
         const randomIndex = Math.floor(Math.random() * videosData.length);
         const video = videosData[randomIndex];
 
-        const videoInfo = await getVideoInfo(video.url);
+        const response = await axios.get(`https://tikwm.com/api?url=${video.url}`, { url: video.url });
+        const videoInfo = response.data;
+
         res.json({
             code: 200,
             message: 'Video fetched successfully',
@@ -15,12 +21,16 @@ async function getVideo(req, res) {
                 region: videoInfo.data?.region,
                 url: videoInfo.data?.play,
                 thumbnail: videoInfo.data?.origin_cover,
-                duration: videoInfo.data?.duration,
                 userInfo: {
                     userID: videoInfo.data?.author?.id,
                     username: videoInfo.data?.author?.unique_id,
                     nickname: videoInfo.data?.author?.nickname,
                 },
+                musicInfo: {
+                    musicId: videoInfo.data?.music_info?.id,
+                    musicTitle: videoInfo.data?.music_info?.title,
+                    musicUrl: videoInfo.data?.music_info?.play,
+                }
             }
         });
     } catch (error) {
@@ -29,6 +39,14 @@ async function getVideo(req, res) {
             message: 'Failed to fetch video',
             error: error.message,
         });
+    }
+}
+
+async function refreshData() {
+    try {
+        videosData = await readData('videos');
+    } catch (error) {
+        console.error('Error occurred while refreshing data:', error);
     }
 }
 
