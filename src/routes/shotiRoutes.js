@@ -4,6 +4,6 @@ import { getVideo } from '../controllers/getVideo.js';
 const router = express.Router();
 
 router.post('/add', addVideo);
-router.post('/get', getVideo);
+router.get('/get', getVideo);
 
 export { router };
