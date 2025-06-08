@@ -20,6 +20,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/', router);
+app.get('/', (req, res) => {
+    res.send('Welcome to the Shoti API');
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
